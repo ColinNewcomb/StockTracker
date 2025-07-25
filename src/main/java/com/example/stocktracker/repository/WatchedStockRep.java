@@ -1,6 +1,7 @@
 package com.example.stocktracker.repository;
 
 import com.example.stocktracker.model.WatchedStock;
+import java.util.List;
 
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ public interface WatchedStockRep extends JpaRepository<WatchedStock, Long> {
     Optional<WatchedStock> findBySymbolIgnoreCase(String symbol);
     boolean existsBySymbolIgnoreCase(String symbol);
     void deleteBySymbolIgnoreCase(String symbol);
+    List<WatchedStock> findByNameContainingIgnoreCase(String name);
     // Additional methods can be defined here if needed
 
 }

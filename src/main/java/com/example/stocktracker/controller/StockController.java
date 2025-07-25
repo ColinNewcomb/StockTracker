@@ -2,6 +2,9 @@ package com.example.stocktracker.controller;
 
 import com.example.stocktracker.model.WatchedStock;
 import com.example.stocktracker.repository.WatchedStockRep;
+
+import jakarta.validation.Valid;
+
 //import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +41,7 @@ public class StockController {
 
     // Endpoints to add Stocks to Rep
     @PostMapping
-    public WatchedStock addStock(@RequestBody WatchedStock stock) {
+    public WatchedStock addStock(@Valid @RequestBody WatchedStock stock) {
         if (repository.existsBySymbolIgnoreCase(stock.getSymbol())) {
             throw new IllegalStateException("Stock already exists: " + stock.getSymbol());
         }
@@ -47,14 +50,12 @@ public class StockController {
 
     // Endpoint to update a stock by its symbol
     @PutMapping("/{symbol}")
-    public WatchedStock updateStock(@PathVariable String symbol, @RequestBody WatchedStock stock) {
+    public WatchedStock updateStock(@Valid @PathVariable String symbol, @RequestBody WatchedStock stock) {
         WatchedStock existingStock = repository.findBySymbolIgnoreCase(symbol)
         .orElseThrow(() -> new IllegalArgumentException("Stock Not Found: " + symbol));
     
         existingStock.setName(stock.getName());
         existingStock.setPrice(stock.getPrice());
-        existingStock.setChange(stock.getChange());
-        existingStock.setChangePercent(stock.getChangePercent());
         return repository.save(existingStock);
     }
 
@@ -73,4 +74,9 @@ public class StockController {
         repository.deleteAll();
         return ResponseEntity.ok("All stocks deleted from watchlist.");
     }
+    @GetMapping("/search")
+    public List<WatchedStock> searchByName(@RequestParam String query) {
+        return repository.findByNameContainingIgnoreCase(query);
+}
+
 }
