@@ -17,5 +17,8 @@ public class WatchedStock {
 
     private String symbol;
     private String name;
+    private Double price;
+    private Double change;
+    private Double changePercent;
     private LocalDateTime addedAt = LocalDateTime.now();
 }
