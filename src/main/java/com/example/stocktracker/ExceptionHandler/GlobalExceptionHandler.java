@@ -5,10 +5,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import com.example.stocktracker.Exceptions.*;
+
+import com.example.stocktracker.Exceptions.EmptyWatchListException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
     
+    @ExceptionHandler(StockAlreadyExistsException.class)
+    
+    public ResponseEntity<String> handleStockAlreadyExists(StockAlreadyExistsException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+    @ExceptionHandler(UpdateStockNotFoundException.class)
+    public ResponseEntity<String> handleLookUpStockNotFoundException(UpdateStockNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+    //Consider NO_CONTENT As HttpStatus
+    @ExceptionHandler(EmptyWatchListException.class)
+    public ResponseEntity<String> handleEmptyWatchListException(EmptyWatchListException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+    @ExceptionHandler(StockNotFoundException.class)
+    public ResponseEntity<String> handleStockNotFoundException(StockNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

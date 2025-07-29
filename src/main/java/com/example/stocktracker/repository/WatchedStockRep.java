@@ -13,7 +13,7 @@ public interface WatchedStockRep extends JpaRepository<WatchedStock, Long> {
     Optional<WatchedStock> findBySymbolIgnoreCase(String symbol);
     boolean existsBySymbolIgnoreCase(String symbol);
     void deleteBySymbolIgnoreCase(String symbol);
-    WatchedStock findByNameContainingIgnoreCase(String name);
+    Optional<WatchedStock> findByNameContainingIgnoreCase(String name);
     // Additional methods can be defined here if needed
 
 }

@@ -2,6 +2,7 @@ package com.example.stocktracker.controller;
 
 import com.example.stocktracker.DTO.WatchedStockRequestDTO;
 import com.example.stocktracker.DTO.WatchedStockResponseDTO;
+
 import com.example.stocktracker.Mapper.WatchedStockMapper;
 import com.example.stocktracker.model.WatchedStock;
 import com.example.stocktracker.repository.WatchedStockRep;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 //import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.stocktracker.Exceptions.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,62 +36,77 @@ public class StockController {
     public List<WatchedStockResponseDTO> getAll() {
         List<WatchedStock> stocks = repository.findAll();
         if (stocks.isEmpty()) {
-            throw new IllegalArgumentException("No stocks found in the watchlist.");
+            throw new EmptyWatchListException();
         }
         return mapper.toDtoList(stocks);
     }
 
     // Endpoint to get a stock by its symbol
     @GetMapping("/{symbol}")
-    public ResponseEntity<WatchedStockResponseDTO> getStockBySymbol(@PathVariable String symbol) {
+    public WatchedStockResponseDTO getStockBySymbol(@PathVariable String symbol) {
         Optional<WatchedStock> stockOptional = repository.findBySymbolIgnoreCase(symbol);
+        if(stockOptional.isEmpty()){
+            throw new StockNotFoundException(symbol);
+        }
         WatchedStock stock = stockOptional.get();
-        WatchedStockResponseDTO response = mapper.toDto(stock);
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return mapper.toDto(stock);
     }
 
     // Endpoints to add Stocks to Rep
     @PostMapping
-    public ResponseEntity<WatchedStockResponseDTO> addStock(@Valid @RequestBody WatchedStockRequestDTO dto) {
+    public WatchedStockResponseDTO addStock(@Valid @RequestBody WatchedStockRequestDTO dto) {
         WatchedStock stock = mapper.toEntity(dto);
+        String symbol = stock.getSymbol();
+        Optional<WatchedStock> stockOptional = repository.findBySymbolIgnoreCase(symbol);
+        if(stockOptional.isEmpty()){
+            throw new StockAlreadyExistsException(symbol);
+        }
         WatchedStock saved = repository.save(stock);
-        WatchedStockResponseDTO response = mapper.toDto(stock);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return mapper.toDto(saved);
     }
 
     // Endpoint to update a stock by its symbol
     @PutMapping("/{symbol}")
-    public ResponseEntity<WatchedStockResponseDTO> updateStock(@Valid @PathVariable String symbol, @RequestBody WatchedStock stock) {
-        WatchedStock existingStock = repository.findBySymbolIgnoreCase(symbol)
-        .orElseThrow(() -> new IllegalArgumentException("Stock Not Found: " + symbol));
-    
-        WatchedStockResponseDTO response = mapper.toDto(existingStock);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public WatchedStockResponseDTO updateStock(@Valid @PathVariable String symbol, @RequestBody WatchedStock stock) {
+        Optional<WatchedStock> existingStock = repository.findBySymbolIgnoreCase(symbol);
+        if(existingStock.isEmpty()){
+            throw new StockNotFoundException(symbol);
+        }
+        WatchedStock existstock = existingStock.get();
+        //Added ErrorHandling, but doesnt actually update Stock as of yet *FIX*
+
+
+        return mapper.toDto(existstock);
     }
 
     //Endpoint to query stock by its name
     @GetMapping("/search")
-    public ResponseEntity<WatchedStockResponseDTO> searchByName(@RequestParam String query) {
-        WatchedStock existingStock = repository.findByNameContainingIgnoreCase(query);
-        WatchedStockResponseDTO response = mapper.toDto(existingStock);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public WatchedStockResponseDTO searchByName(@RequestParam String query) {
+        Optional<WatchedStock> existingStock = repository.findByNameContainingIgnoreCase(query);
+        if(existingStock.isEmpty()){
+            throw new StockNotFoundException(query);
+        }
+        WatchedStock stock = existingStock.get();
+        return mapper.toDto(stock);
         
     }
 
     // Endpoint to delete a stock by its symbol
     @DeleteMapping("/{symbol}")
     public String deleteStock(@PathVariable String symbol) {
-        WatchedStock existingStock = repository.findBySymbolIgnoreCase(symbol)
-                .orElseThrow(() -> new IllegalArgumentException("Stock Not Found: " + symbol));
-        repository.delete(existingStock);
-        return "Deleted stock: " + symbol;
+        Optional<WatchedStock> existingStock = repository.findByNameContainingIgnoreCase(symbol);
+        if(existingStock.isEmpty()){
+            throw new StockNotFoundException(symbol);
+        }
+        WatchedStock stock = existingStock.get();
+        repository.delete(stock);
+        return symbol + "Deleted";
     }
 
     // Endpoint to delete all stocks from the watchlist
     @DeleteMapping
     public ResponseEntity<String> deleteAllStocks() {
         repository.deleteAll();
-        return ResponseEntity.ok("All stocks deleted from watchlist.");
+        return ResponseEntity.ok("All stocks have been deleted from watchlist.");
     }
 }
