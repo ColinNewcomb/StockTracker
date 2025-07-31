@@ -1,7 +1,6 @@
 package com.example.stocktracker.repository;
 
 import com.example.stocktracker.model.WatchedStock;
-import java.util.List;
 
 import java.util.Optional;
 

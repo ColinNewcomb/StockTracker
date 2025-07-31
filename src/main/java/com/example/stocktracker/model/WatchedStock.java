@@ -33,8 +33,4 @@ public class WatchedStock {
 
     private LocalDateTime addedAt = LocalDateTime.now();
 
-    public WatchedStock orElseThrow(Object object) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
-    }
 }
