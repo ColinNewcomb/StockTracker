@@ -70,6 +70,17 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
+    @ExceptionHandler(RepositoryEmptyException.class)
+    public ResponseEntity<ErrorResponseDTO> handleRepositoryEmptyException(RepositoryEmptyException e,
+    HttpServletRequest request) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+            "REPOSITORY_EMPTY",
+            e.getMessage(),
+            request.getRequestURI(),
+            HttpStatus.NO_CONTENT.value()
+        );
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(error);
+    }
     @ExceptionHandler(StockAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDTO> handleStockAlreadyExists(StockAlreadyExistsException e, HttpServletRequest request){
         ErrorResponseDTO error = new ErrorResponseDTO(

@@ -1,9 +1,11 @@
 package com.example.stocktracker.service;
 
+import org.apache.catalina.startup.ClassLoaderFactory.Repository;
 import org.springframework.stereotype.Service;
 import com.example.stocktracker.DTO.WatchedStockRequestDTO;
 import com.example.stocktracker.DTO.WatchedStockResponseDTO;
 import com.example.stocktracker.Exceptions.EmptyWatchListException;
+import com.example.stocktracker.Exceptions.RepositoryEmptyException;
 import com.example.stocktracker.Exceptions.StockAlreadyExistsException;
 import com.example.stocktracker.Exceptions.StockNotFoundException;
 import com.example.stocktracker.Mapper.WatchedStockMapper;
@@ -97,12 +99,16 @@ public class StockService {
         }
         WatchedStock stock = existingStock.get();
         repository.delete(stock);
-        return symbol + "Deleted";
+        return symbol + " Has Been Deleted";
     }
 
     public String deleteAllStocks() {
+        Optional<WatchedStock> existingStock = repository.findAll().stream().findAny();
+        if(existingStock.isEmpty()){
+            throw new RepositoryEmptyException();
+        }
         repository.deleteAll();
-        String message = "All stocks have been deleted from watchlist.";
+        String message = "All stocks have been deleted from your watchlist.";
         return message;
     }
 }
